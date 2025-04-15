@@ -16,9 +16,6 @@ yarn-error.log*
 .env
 .env.*
 
-# OS-specific files
-.DS_Store
-Thumbs.db
 
 # Editor-specific files
 .vscode/
