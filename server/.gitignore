@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+
+# TypeScript build output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# dotenv environment variables
+.env
+.env.*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+.vscode/
+.idea/
+
+# Coverage reports
+coverage/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional: if using PM2 or other runtime managers
+pids/
+*.pid
+*.seed
+
+# Optional: local database/testing files
+*.sqlite
+*.db
+dump.rdb

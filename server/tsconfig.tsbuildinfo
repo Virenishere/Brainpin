@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/config/dbconnection.ts","./src/controllers/postcontroller.ts","./src/controllers/usercontroller.ts","./src/middlewares/authmiddleware.ts","./src/models/linkmodel.ts","./src/models/postmodel.ts","./src/models/tagsmodel.ts","./src/models/usermodel.ts","./src/routes/postroutes.ts","./src/routes/userroutes.ts"],"version":"5.8.3"}
