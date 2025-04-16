@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import Post, {IPost}  from "../models/postModel"; // Import IPost
+import Post, { IPost } from "../models/postModel";
 import Tag from "../models/tagsModel";
 import Link from "../models/linkModel";
 import { Types } from "mongoose";
@@ -16,7 +16,6 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
     try {
         const { type, link, title, tags } = postSchema.parse(req.body);
 
-        // Create or find Link document
         let linkDoc = await Link.findOne({ hash: link });
         if (!linkDoc) {
             linkDoc = await Link.create({
@@ -26,7 +25,6 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
         }
         const linkId = linkDoc._id as Types.ObjectId;
 
-        // Convert tag strings to ObjectIds (create if not exists)
         let tagIds: Types.ObjectId[] = [];
         if (tags && tags.length > 0) {
             tagIds = await Promise.all(
@@ -48,7 +46,6 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
             userId: req.body.userId,
         });
 
-        // Populate link and tags for the response
         const populatedPost = await Post.findById(post._id)
             .populate("link", "hash")
             .populate("tags");
@@ -59,7 +56,7 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-export const getPosts = async (req: Request, res: Response): Promise<void> => {
+export const getPosts = async (_req: Request, res: Response): Promise<void> => {
     const posts = await Post.find()
         .populate("tags")
         .populate("link", "hash")
@@ -86,7 +83,6 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
     try {
         const { type, link, title, tags } = postSchema.partial().parse(req.body);
 
-        // Handle link update (create or find Link document)
         let linkId: Types.ObjectId | undefined;
         if (link) {
             let linkDoc = await Link.findOne({ hash: link });
@@ -99,7 +95,6 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
             linkId = linkDoc._id as Types.ObjectId;
         }
 
-        // Convert tag strings to ObjectIds (create if not exists)
         let tagIds: Types.ObjectId[] | undefined;
         if (tags && tags.length > 0) {
             tagIds = await Promise.all(
@@ -150,9 +145,11 @@ export const deletePost = async (req: Request, res: Response): Promise<void> => 
 };
 
 export const sharePost = async (req: Request, res: Response): Promise<void> => {
-    res.json({ message: `Post with ID ${req.params.id} shared successfully.` });
+    const postId = req.params.id;
+    res.json({ message: `Post with ID ${postId} shared successfully.` });
 };
 
 export const getSharedPost = async (req: Request, res: Response): Promise<void> => {
-    res.json({ message: `Shared post with ID ${req.params.id}` });
+    const postId = req.params.id;
+    res.json({ message: `Shared post with ID ${postId}` });
 };

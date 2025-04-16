@@ -1,6 +1,6 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import cors from "cors"; // ✅ Import cors
+import cors from "cors";
 import { connectDB } from "./config/dbConnection";
 import userRoutes from "./routes/userRoutes";
 import postRoutes from "./routes/postRoutes";
@@ -11,9 +11,9 @@ dotenv.config();
 // Create express app
 const app = express();
 
-// ✅ Enable CORS (this must come before routes)
+// Enable CORS (this must come before routes)
 app.use(cors({
-  origin: "https://brainpin.vercel.app", // Vite default port
+  origin: "https://brainpin.vercel.app",
   credentials: true,
 }));
 
@@ -28,7 +28,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 
 // Default route
-app.get("/", (req, res) => {
+app.get("/", (_req: Request, res: Response) => {
   res.send("API is running...");
 });
 

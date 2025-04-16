@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSharedPost = exports.sharePost = exports.deletePost = exports.updatePost = exports.getPostById = exports.getPosts = exports.createPost = void 0;
 const zod_1 = require("zod");
-const postModel_1 = __importDefault(require("../models/postModel")); // Import IPost
+const postModel_1 = __importDefault(require("../models/postModel"));
 const tagsModel_1 = __importDefault(require("../models/tagsModel"));
 const linkModel_1 = __importDefault(require("../models/linkModel"));
 const postSchema = zod_1.z.object({
@@ -26,7 +26,6 @@ const postSchema = zod_1.z.object({
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { type, link, title, tags } = postSchema.parse(req.body);
-        // Create or find Link document
         let linkDoc = yield linkModel_1.default.findOne({ hash: link });
         if (!linkDoc) {
             linkDoc = yield linkModel_1.default.create({
@@ -35,7 +34,6 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             });
         }
         const linkId = linkDoc._id;
-        // Convert tag strings to ObjectIds (create if not exists)
         let tagIds = [];
         if (tags && tags.length > 0) {
             tagIds = yield Promise.all(tags.map((tagTitle) => __awaiter(void 0, void 0, void 0, function* () {
@@ -53,7 +51,6 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             tags: tagIds,
             userId: req.body.userId,
         });
-        // Populate link and tags for the response
         const populatedPost = yield postModel_1.default.findById(post._id)
             .populate("link", "hash")
             .populate("tags");
@@ -64,7 +61,7 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.createPost = createPost;
-const getPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getPosts = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const posts = yield postModel_1.default.find()
         .populate("tags")
         .populate("link", "hash")
@@ -91,7 +88,6 @@ exports.getPostById = getPostById;
 const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { type, link, title, tags } = postSchema.partial().parse(req.body);
-        // Handle link update (create or find Link document)
         let linkId;
         if (link) {
             let linkDoc = yield linkModel_1.default.findOne({ hash: link });
@@ -103,7 +99,6 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             }
             linkId = linkDoc._id;
         }
-        // Convert tag strings to ObjectIds (create if not exists)
         let tagIds;
         if (tags && tags.length > 0) {
             tagIds = yield Promise.all(tags.map((tagTitle) => __awaiter(void 0, void 0, void 0, function* () {
@@ -154,10 +149,12 @@ const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.deletePost = deletePost;
 const sharePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.json({ message: `Post with ID ${req.params.id} shared successfully.` });
+    const postId = req.params.id;
+    res.json({ message: `Post with ID ${postId} shared successfully.` });
 });
 exports.sharePost = sharePost;
 const getSharedPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.json({ message: `Shared post with ID ${req.params.id}` });
+    const postId = req.params.id;
+    res.json({ message: `Shared post with ID ${postId}` });
 });
 exports.getSharedPost = getSharedPost;
