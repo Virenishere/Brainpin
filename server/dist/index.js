@@ -33,8 +33,6 @@ app.use((0, cors_1.default)({
     },
     credentials: true,
 }));
-// Handle CORS preflight requests
-app.options("*", (0, cors_1.default)());
 // Parse JSON
 app.use(express_1.default.json());
 // Connect to MongoDB
