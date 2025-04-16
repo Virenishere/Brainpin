@@ -11,12 +11,30 @@ dotenv.config();
 // Create express app
 const app = express();
 
-// Enable CORS (this must come before routes)
-app.use(cors({
-  origin: "https://brainpin.vercel.app",
-  credentials: true,
-}));
+// Define allowed origins
+const allowedOrigins = [
+  "https://brainpin.vercel.app",
+  "http://localhost:8000", // Add local development origin
+];
 
+// Enable CORS with dynamic origin
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g., Postman or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// Handle CORS preflight requests
+app.options("*", cors());
 // Parse JSON
 app.use(express.json());
 

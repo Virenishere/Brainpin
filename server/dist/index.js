@@ -13,11 +13,28 @@ const postRoutes_1 = __importDefault(require("./routes/postRoutes"));
 dotenv_1.default.config();
 // Create express app
 const app = (0, express_1.default)();
-// Enable CORS (this must come before routes)
+// Define allowed origins
+const allowedOrigins = [
+    "https://brainpin.vercel.app",
+    "http://localhost:8000", // Add local development origin
+];
+// Enable CORS with dynamic origin
 app.use((0, cors_1.default)({
-    origin: "https://brainpin.vercel.app",
+    origin: (origin, callback) => {
+        // Allow requests with no origin (e.g., Postman or curl)
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true,
 }));
+// Handle CORS preflight requests
+app.options("*", (0, cors_1.default)());
 // Parse JSON
 app.use(express_1.default.json());
 // Connect to MongoDB
