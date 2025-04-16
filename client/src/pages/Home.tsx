@@ -381,7 +381,7 @@ function Home() {
             >
               Get Started Now
             </Button>
-            <Button variant="outline" size="lg" onClick={() => (window.location.href = "/signin")}>
+            <Button variant="outline" size="lg" onClick={() => (window.location.href = "/login")}>
               Sign In
             </Button>
           </div>

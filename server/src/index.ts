@@ -1,29 +1,37 @@
 import express from "express";
 import dotenv from "dotenv";
-import {connectDB} from "./config/dbConnection"
+import cors from "cors"; // ✅ Import cors
+import { connectDB } from "./config/dbConnection";
 import userRoutes from "./routes/userRoutes";
 import postRoutes from "./routes/postRoutes";
 
-// load env varaibles from .env files
+// Load env variables
 dotenv.config();
 
-// create an express app and also adding a middleware to parse on JSON requests
+// Create express app
 const app = express();
+
+// ✅ Enable CORS (this must come before routes)
+app.use(cors({
+  origin: "https://brainpin.vercel.app", // Vite default port
+  credentials: true,
+}));
+
+// Parse JSON
 app.use(express.json());
 
-// connect to MongoDB
+// Connect to MongoDB
 connectDB();
 
-//apis
+// APIs
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 
-// default route to check if server is working
-app.get("/", (req,res)=>{
-    res.send("API is running...");
-})
+// Default route
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 
-// Start the server on the defined port
+// Start the server
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, ()=> console.log(`Sever running on http://localhost:${PORT}`));
-
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
