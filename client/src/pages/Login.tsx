@@ -25,8 +25,9 @@ const Login = () => {
       console.log("Navigating to dashboard");
       navigate("/dashboard");
     } catch (err: any) {
-      console.error("API error:", err.response || err);
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      console.error("API error:", err);
+      const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
     }
   };
 

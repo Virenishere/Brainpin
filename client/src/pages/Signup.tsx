@@ -15,16 +15,19 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted", { email, password });
+    console.log("Form submitted", { username, email, password });
     setError("");
     try {
       console.log("Making API call to /api/users/signup");
-      const response = await instance.post("/api/users/signup", { email, password });
+      const response = await instance.post("/api/users/signup", { username, email, password });
       console.log("API response:", response.data);
-      // ... rest of the code
+      localStorage.setItem("authToken", response.data.token);
+      console.log("Navigating to dashboard");
+      navigate("/dashboard");
     } catch (err: any) {
       console.error("API error:", err);
-      setError(err.response?.data?.message || "Signup failed. Please try again.");
+      const errorMessage = err.response?.data?.message || "Signup failed. Please try again.";
+      setError(errorMessage);
     }
   };
 
