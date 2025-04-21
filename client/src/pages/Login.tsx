@@ -19,7 +19,7 @@ const Login = () => {
 
     try {
       console.log("Making API call to /api/users/signin");
-      const response = await instance.post("/api/users/signin", { username, email, password });
+      const response = await instance.post("/api/users/signin", { email, password }); // Remove username
       console.log("API response:", response.data);
       const token = response.data.token;
       if (!token) {
