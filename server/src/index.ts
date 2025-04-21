@@ -14,7 +14,8 @@ const app = express();
 // Define allowed origins
 const allowedOrigins = [
   "https://brainpin.vercel.app",
-  "http://localhost:8000", // Add local development origin
+  "http://localhost:8000",
+  "http://localhost:5173", 
 ];
 
 // Enable CORS with dynamic origin

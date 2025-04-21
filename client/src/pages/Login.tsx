@@ -18,15 +18,20 @@ const Login = () => {
     setError("");
 
     try {
-      console.log("Making API call to /api/users/signin");
-      const response = await instance.post("/api/users/signin", { email, password });
+      console.log("Making API call to /api/users/login");
+      const response = await instance.post("/api/users/login", { username, email, password });
       console.log("API response:", response.data);
-      localStorage.setItem("authToken", response.data.token);
+      const token = response.data.token;
+      if (!token) {
+        throw new Error("No token received from server");
+      }
+      console.log("Saving token:", token);
+      localStorage.setItem("authToken", token);
       console.log("Navigating to dashboard");
       navigate("/dashboard");
     } catch (err: any) {
       console.error("API error:", err);
-      const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials and try again.";
+      const errorMessage = err.response?.data?.message || "Login failed. Please try again.";
       setError(errorMessage);
     }
   };

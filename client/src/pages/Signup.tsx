@@ -21,7 +21,12 @@ const Signup = () => {
       console.log("Making API call to /api/users/signup");
       const response = await instance.post("/api/users/signup", { username, email, password });
       console.log("API response:", response.data);
-      localStorage.setItem("authToken", response.data.token);
+      const token = response.data.token;
+      if (!token) {
+        throw new Error("No token received from server");
+      }
+      console.log("Saving token:", token);
+      localStorage.setItem("authToken", token);
       console.log("Navigating to dashboard");
       navigate("/dashboard");
     } catch (err: any) {
