@@ -16,6 +16,7 @@ exports.getAllUsers = exports.getProfile = exports.signin = exports.signup = voi
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
+const mongoose_1 = __importDefault(require("mongoose"));
 const userModel_1 = __importDefault(require("../models/userModel"));
 const signupSchema = zod_1.z.object({
     username: zod_1.z.string().min(3),
@@ -31,7 +32,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { username, email, password } = signupSchema.parse(req.body);
         const userExists = yield userModel_1.default.findOne({ email });
         if (userExists) {
-            res.status(400).json({ message: "User already exist" });
+            res.status(400).json({ message: "User already exists" });
             return;
         }
         const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
@@ -82,9 +83,12 @@ const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getProfile = getProfile;
-const getAllUsers = (res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllUsers = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log('Fetching all users...');
+        if (!mongoose_1.default.connection.readyState) {
+            throw new Error('Database not connected');
+        }
         const users = yield userModel_1.default.find().select('-password');
         console.log('Users fetched:', users.length);
         res.json(users);

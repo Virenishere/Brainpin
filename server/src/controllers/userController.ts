@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
+import mongoose from "mongoose";
 import User from "../models/userModel";
 
 const signupSchema = z.object({
@@ -13,7 +14,7 @@ const signupSchema = z.object({
 const signinSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
-})
+});
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -21,7 +22,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
         const userExists = await User.findOne({ email });
         if (userExists) {
-            res.status(400).json({ message: "User already exist" });
+            res.status(400).json({ message: "User already exists" });
             return;
         }
 
@@ -78,9 +79,12 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-export const getAllUsers = async (res: Response): Promise<void> => {
+export const getAllUsers = async (_req: Request, res: Response): Promise<void> => {
     try {
         console.log('Fetching all users...');
+        if (!mongoose.connection.readyState) {
+            throw new Error('Database not connected');
+        }
         const users = await User.find().select('-password');
         console.log('Users fetched:', users.length);
         res.json(users);
