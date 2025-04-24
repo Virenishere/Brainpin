@@ -81,7 +81,7 @@ const BrainPinMain = () => {
   };
 
   return (
-    <div className="min-h-screen p-4 bg-black">
+    <div className="min-h-screen p-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
         <h1 className="font-bold text-xl mb-4 sm:mb-0">All Notes</h1>
         <div className="flex flex-col sm:flex-row gap-2">
