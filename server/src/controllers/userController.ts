@@ -77,9 +77,12 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
 
 export const getAllUsers = async (res: Response): Promise<void> => {
     try {
-        const users = await User.find().select("-password");
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ message: "Server error" });
+      console.log('Fetching all users...');
+      const users = await User.find().select('-password');
+      console.log('Users fetched:', users.length);
+      res.json(users);
+    } catch (err: any) {
+      console.error('Error in getAllUsers:', err.message, err.stack);
+      res.status(500).json({ message: 'Server error', error: err.message });
     }
-};
+  };

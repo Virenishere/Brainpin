@@ -9,41 +9,40 @@ interface User {
 }
 
 const BrainPinMain = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const fetchUserProfile = useCallback(async () => {
+  const fetchAllUsers = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('authToken');
 
-      if (!token || !userId) {
-        setError('Please sign in to view your profile');
+      if (!token) {
+        setError('Please sign in to view users');
         setLoading(false);
         navigate('/signin');
         return;
       }
 
-      const response = await instance.get(`/api/users/profile/${userId}`, {
+      const response = await instance.get('/api/users/all', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      setUser(response.data);
+      setUsers(response.data);
       setLoading(false);
     } catch (err: any) {
       if (err.response) {
-        // HTTP errors (e.g., 401, 404)
+        // HTTP errors (e.g., 401, 500)
         if (err.response.status === 401) {
-          localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
           localStorage.removeItem('userId');
           setError('Session expired. Please sign in again.');
           navigate('/signin');
         } else {
-          setError(err.response.data?.message || 'Failed to fetch profile');
+          setError(err.response.data?.message || 'Failed to fetch users');
         }
       } else {
         // Network or other errors
@@ -54,8 +53,8 @@ const BrainPinMain = () => {
   }, [navigate]);
 
   useEffect(() => {
-    fetchUserProfile();
-  }, [fetchUserProfile]);
+    fetchAllUsers();
+  }, [fetchAllUsers]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -66,20 +65,30 @@ const BrainPinMain = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold mb-4">User Profile</h1>
-        {user ? (
-          <div className="text-lg">
-            <p>
-              <span className="font-semibold">Username:</span> {user.username}
-            </p>
-            <p>
-              <span className="font-semibold">Email:</span> {user.email}
-            </p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
+        <h1 className="text-2xl font-bold mb-4">All Users</h1>
+        {users.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="px-4 py-2 text-left">Username</th>
+                  <th className="px-4 py-2 text-left">Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user._id} className="border-b">
+                    <td className="px-4 py-2">{user.username}</td>
+                    <td className="px-4 py-2">{user.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <p>No user data available</p>
+          <p>No users found</p>
         )}
       </div>
     </div>
