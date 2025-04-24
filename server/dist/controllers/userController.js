@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProfile = exports.signin = exports.signup = void 0;
+exports.getAllUsers = exports.getProfile = exports.signin = exports.signup = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
@@ -40,6 +40,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(201).json({ token, user: { id: user._id, username, email } });
     }
     catch (error) {
+        console.error('Signup error:', error.message, error.stack);
         res.status(400).json({ message: error.message });
     }
 });
@@ -61,6 +62,7 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.json({ token, user: { id: user._id, username: user.username, email } });
     }
     catch (error) {
+        console.error('Signin error:', error.message, error.stack);
         res.status(400).json({ message: error.message });
     }
 });
@@ -75,7 +77,21 @@ const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.json(user);
     }
     catch (err) {
-        res.status(500).json({ message: "Server error" });
+        console.error('GetProfile error:', err.message, err.stack);
+        res.status(500).json({ message: "Server error", error: err.message });
     }
 });
 exports.getProfile = getProfile;
+const getAllUsers = (res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Fetching all users...');
+        const users = yield userModel_1.default.find().select('-password');
+        console.log('Users fetched:', users.length);
+        res.json(users);
+    }
+    catch (err) {
+        console.error('GetAllUsers error:', err.message, err.stack);
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+exports.getAllUsers = getAllUsers;

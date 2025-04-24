@@ -10,4 +10,5 @@ const router = express_1.default.Router();
 router.post("/signup", userController_1.signup);
 router.post("/signin", userController_1.signin);
 router.get("/profile/:id", authMiddleware_1.protect, userController_1.getProfile);
+router.get("/all", authMiddleware_1.protect, userController_1.getAllUsers);
 exports.default = router;
