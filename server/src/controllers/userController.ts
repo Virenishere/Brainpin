@@ -33,6 +33,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 
         res.status(201).json({ token, user: { id: user._id, username, email } });
     } catch (error: any) {
+        console.error('Signup error:', error.message, error.stack);
         res.status(400).json({ message: error.message });
     }
 };
@@ -57,6 +58,7 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
 
         res.json({ token, user: { id: user._id, username: user.username, email } });
     } catch (error: any) {
+        console.error('Signin error:', error.message, error.stack);
         res.status(400).json({ message: error.message });
     }
 };
@@ -70,19 +72,20 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
         }
 
         res.json(user);
-    } catch (err) {
-        res.status(500).json({ message: "Server error" });
+    } catch (err: any) {
+        console.error('GetProfile error:', err.message, err.stack);
+        res.status(500).json({ message: "Server error", error: err.message });
     }
 };
 
 export const getAllUsers = async (res: Response): Promise<void> => {
     try {
-      console.log('Fetching all users...');
-      const users = await User.find().select('-password');
-      console.log('Users fetched:', users.length);
-      res.json(users);
+        console.log('Fetching all users...');
+        const users = await User.find().select('-password');
+        console.log('Users fetched:', users.length);
+        res.json(users);
     } catch (err: any) {
-      console.error('Error in getAllUsers:', err.message, err.stack);
-      res.status(500).json({ message: 'Server error', error: err.message });
+        console.error('GetAllUsers error:', err.message, err.stack);
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
-  };
+};
