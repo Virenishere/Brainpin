@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {z} from "zod";
+import { z } from "zod";
 import User from "../models/userModel";
-
 
 const signupSchema = z.object({
     username: z.string().min(3),
@@ -71,6 +70,15 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
         }
 
         res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const getAllUsers = async (res: Response): Promise<void> => {
+    try {
+        const users = await User.find().select("-password");
+        res.json(users);
     } catch (err) {
         res.status(500).json({ message: "Server error" });
     }
