@@ -11,7 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const BrainPinMain = () => {
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
@@ -20,60 +28,90 @@ const BrainPinMain = () => {
   const [link, setLink] = useState("");
   const [tags, setTags] = useState("");
   const [postCreated, setPostCreated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formMessage, setFormMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const navigate = useNavigate();
 
-  const handleAddContent = async (e) => {
+  const handleAddContent = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setFormMessage(null);
     try {
       const newPost = {
         type,
         title,
-        link: { hash: link },
-        tags: tags.split(",").map((tag) => ({ title: tag.trim() })),
+        link: link || undefined,
+        tags: tags ? tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [],
       };
-      await axios.post("https://brainpin.onrender.com/api/posts", newPost, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      setPostCreated(!postCreated); // Trigger BrainCard to refetch posts
+      console.log("Creating post with payload:", newPost);
+      console.log("Token:", localStorage.getItem("authToken"));
+      const response = await axios.post(
+        "https://brainpin.onrender.com/api/posts",
+        newPost,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+      console.log("Create post response:", response.data);
+      setPostCreated(!postCreated);
       setIsAddContentOpen(false);
       setType("");
       setTitle("");
       setLink("");
       setTags("");
-      alert("Post created successfully!");
-    } catch (err) {
-      alert("Failed to create post");
+      setFormMessage({ type: "success", text: "Post created successfully!" });
+    } catch (err: any) {
+      console.error("Create post error:", err.response?.data || err.message);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userId");
+        navigate("/login");
+        setFormMessage({ type: "error", text: "Session expired. Please log in again." });
+      } else {
+        setFormMessage({
+          type: "error",
+          text: "Failed to create post: " + (err.response?.data?.message || err.message),
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="h-screen p-4">
-      <div className="flex flex-row justify-between">
-        <div className="font-bold">All Notes</div>
-        <div className="flex gap-2">
-          <Button>
+    <div className="min-h-screen p-4 bg-black">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+        <h1 className="font-bold text-xl mb-4 sm:mb-0">All Notes</h1>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" className="w-full sm:w-auto">
             <Share2 className="mr-2 h-4 w-4" /> Share Brain
           </Button>
           <Dialog open={isAddContentOpen} onOpenChange={setIsAddContentOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Add Content
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Add New Content</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleAddContent} className="space-y-4">
                 <div>
                   <Label htmlFor="type">Type</Label>
-                  <Input
-                    id="type"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    required
-                  />
+                  <Select value={type} onValueChange={setType} required>
+                    <SelectTrigger id="type">
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="articles">Articles</SelectItem>
+                      <SelectItem value="video">Video</SelectItem>
+                      <SelectItem value="images">Images</SelectItem>
+                      <SelectItem value="audio">Audio</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="title">Title</Label>
@@ -85,28 +123,41 @@ const BrainPinMain = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="link">Link</Label>
+                  <Label htmlFor="link">Link (optional)</Label>
                   <Input
                     id="link"
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
+                    placeholder="https://example.com"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="tags">Tags (comma-separated)</Label>
+                  <Label htmlFor="tags">Tags (comma-separated, optional)</Label>
                   <Input
                     id="tags"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
+                    placeholder="tag1, tag2"
                   />
                 </div>
-                <Button type="submit">Create Post</Button>
+                {formMessage && (
+                  <div
+                    className={`text-sm ${
+                      formMessage.type === "error" ? "text-red-500" : "text-green-500"
+                    }`}
+                  >
+                    {formMessage.text}
+                  </div>
+                )}
+                <Button type="submit" disabled={isLoading} className="w-full">
+                  {isLoading ? "Creating..." : "Create Post"}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
         </div>
       </div>
-      <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <BrainCard onPostCreated={postCreated} />
       </div>
     </div>

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -7,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Share2, Trash2, Edit2 } from "lucide-react";
+import { Share2, Trash2, Edit2, FileText, Youtube, Twitter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,15 +19,28 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import axios from "axios";
 
-const BrainCard = () => {
+const BrainCard = ({ onPostCreated }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userId = localStorage.getItem("userId"); // Get logged-in user's ID
+  const userId = localStorage.getItem("userId");
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Fetch posts for the logged-in user
+  // Extract type from query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const typeFilter = queryParams.get("type");
+
+  // Fetch posts for the logged-in user, optionally filtered by type
   useEffect(() => {
     const fetchPosts = async () => {
       if (!userId) {
@@ -36,51 +50,64 @@ const BrainCard = () => {
       }
 
       try {
-        // Option 1: Backend filters by req.user._id (preferred)
-        const response = await axios.get("https://brainpin.onrender.com/api/posts", {
+        const url = typeFilter
+          ? `https://brainpin.onrender.com/api/posts?type=${typeFilter}`
+          : "https://brainpin.onrender.com/api/posts";
+        console.log("Fetching posts from:", url); // Debug URL
+        console.log("Token:", localStorage.getItem("authToken")); // Debug token
+        const response = await axios.get(url, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-
-        // Option 2: Use query parameter if backend supports it
-        // const response = await axios.get(
-        //   `https://brainpin.onrender.com/api/posts?userId=${userId}`,
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-        //     },
-        //   }
-        // );
-
-        // Option 3: Client-side filtering (fallback if backend doesn't filter)
-        // const response = await axios.get("https://brainpin.onrender.com/api/posts");
-        // const userPosts = response.data.filter(
-        //   (post) => post.userId._id === userId
-        // );
-
-        setPosts(response.data); // Use response.data or userPosts for Option 3
+        console.log("Fetch posts response:", response.data); // Debug response
+        setPosts(response.data);
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch posts");
+        console.error("Fetch posts error:", err.response?.data || err.message); // Debug error
+        if (err.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userId");
+          navigate("/login");
+          setError("Session expired. Please log in again.");
+        } else {
+          setError(
+            "Failed to fetch posts: " +
+              (err.response?.data?.message || err.message)
+          );
+        }
         setLoading(false);
       }
     };
     fetchPosts();
-  }, [userId]);
+  }, [userId, onPostCreated, typeFilter, navigate]);
 
   // Delete post
   const handleDelete = async (postId) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
+        console.log("Deleting post:", postId); // Debug
+        console.log("Token:", localStorage.getItem("authToken")); // Debug token
         await axios.delete(`https://brainpin.onrender.com/api/posts/${postId}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
         setPosts(posts.filter((post) => post._id !== postId));
+        alert("Post deleted successfully!");
       } catch (err) {
-        alert("Failed to delete post");
+        console.error("Delete post error:", err.response?.data || err.message); // Debug error
+        if (err.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userId");
+          navigate("/login");
+          alert("Session expired. Please log in again.");
+        } else {
+          alert(
+            "Failed to delete post: " +
+              (err.response?.data?.message || err.message)
+          );
+        }
       }
     }
   };
@@ -88,21 +115,43 @@ const BrainCard = () => {
   // Share post
   const handleShare = async (postId) => {
     try {
+      console.log("Sharing post:", postId); // Debug
+      console.log("Token:", localStorage.getItem("authToken")); // Debug token
       const response = await axios.post(
         `https://brainpin.onrender.com/api/posts/${postId}/share`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         }
       );
-      const shareLink = response.data.shareLink || `https://brainpin.onrender.com/api/posts/shared/${postId}`;
+      console.log("Share post response:", response.data); // Debug response
+      const shareLink =
+        response.data.shareLink ||
+        `https://brainpin.onrender.com/api/posts/shared/${postId}`;
       navigator.clipboard.writeText(shareLink);
       alert("Shareable link copied to clipboard!");
     } catch (err) {
-      alert("Failed to share post");
+      console.error("Share post error:", err.response?.data || err.message); // Debug error
+      if (err.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userId");
+        navigate("/login");
+        alert("Session expired. Please log in again.");
+      } else {
+        alert(
+          "Failed to share post: " + (err.response?.data?.message || err.message)
+        );
+      }
     }
+  };
+
+  // Icon mapping for post types
+  const typeIcons = {
+    articles: <FileText className="h-5 w-5 text-gray-600 inline-block mr-2" />,
+    videos: <Youtube className="h-5 w-5 text-gray-600 inline-block mr-2" />,
+    tweets: <Twitter className="h-5 w-5 text-gray-600 inline-block mr-2" />,
   };
 
   if (!userId) {
@@ -120,8 +169,13 @@ const BrainCard = () => {
           <Card key={post._id} className="w-[350px] shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-xl font-semibold text-gray-800">{post.title}</CardTitle>
-                <CardDescription className="text-sm text-gray-500">{post.type}</CardDescription>
+                <CardTitle className="text-xl font-semibold text-gray-800">
+                  {typeIcons[post.type] || null}
+                  {post.title}
+                </CardTitle>
+                <CardDescription className="text-sm text-gray-500">
+                  {post.type}
+                </CardDescription>
               </div>
               <div className="flex gap-3">
                 <Share2
@@ -139,7 +193,9 @@ const BrainCard = () => {
               <div className="space-y-4">
                 {post.link?.hash && (
                   <div>
-                    <strong className="text-sm font-medium text-gray-700">Link:</strong>{" "}
+                    <strong className="text-sm font-medium text-gray-700">
+                      Link:
+                    </strong>{" "}
                     <a
                       href={post.link.hash}
                       target="_blank"
@@ -151,7 +207,9 @@ const BrainCard = () => {
                   </div>
                 )}
                 <div>
-                  <strong className="text-sm font-medium text-gray-700">Tags:</strong>{" "}
+                  <strong className="text-sm font-medium text-gray-700">
+                    Tags:
+                  </strong>{" "}
                   <div className="flex flex-wrap gap-2 mt-1">
                     {post.tags.map((tag, index) => (
                       <span
@@ -175,31 +233,49 @@ const BrainCard = () => {
 // Update Post Modal Component
 const UpdatePostModal = ({ post, setPosts, posts }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [type, setType] = useState(post.type);
   const [title, setTitle] = useState(post.title);
   const [link, setLink] = useState(post.link?.hash || "");
   const [tags, setTags] = useState(post.tags.map((tag) => tag.title).join(", "));
+  const navigate = useNavigate();
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       const updatedData = {
+        type,
         title,
-        link: { hash: link },
-        tags: tags.split(",").map((tag) => ({ title: tag.trim() })),
+        link: link || undefined, // Send undefined if link is empty
+        tags: tags ? tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [],
       };
+      console.log("Updating post with payload:", updatedData); // Debug payload
+      console.log("Token:", localStorage.getItem("authToken")); // Debug token
       const response = await axios.put(
         `https://brainpin.onrender.com/api/posts/${post._id}`,
         updatedData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         }
       );
+      console.log("Update post response:", response.data); // Debug response
       setPosts(posts.map((p) => (p._id === post._id ? response.data : p)));
       setIsOpen(false);
+      alert("Post updated successfully!");
     } catch (err) {
-      alert("Failed to update post");
+      console.error("Update post error:", err.response?.data || err.message); // Debug error
+      if (err.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userId");
+        navigate("/login");
+        alert("Session expired. Please log in again.");
+      } else {
+        alert(
+          "Failed to update post: " +
+            (err.response?.data?.message || err.message)
+        );
+      }
     }
   };
 
@@ -214,6 +290,19 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
         </DialogHeader>
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
+            <Label htmlFor="type">Type</Label>
+            <Select value={type} onValueChange={setType} required>
+              <SelectTrigger id="type">
+                <SelectValue placeholder="Select a type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="articles">Articles</SelectItem>
+                <SelectItem value="videos">Videos</SelectItem>
+                <SelectItem value="tweets">Tweets</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
@@ -223,19 +312,21 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
             />
           </div>
           <div>
-            <Label htmlFor="link">Link</Label>
+            <Label htmlFor="link">Link (optional)</Label>
             <Input
               id="link"
               value={link}
               onChange={(e) => setLink(e.target.value)}
+              placeholder="https://example.com"
             />
           </div>
           <div>
-            <Label htmlFor="tags">Tags (comma-separated)</Label>
+            <Label htmlFor="tags">Tags (comma-separated, optional)</Label>
             <Input
               id="tags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
+              placeholder="tag1, tag2"
             />
           </div>
           <Button type="submit">Save Changes</Button>
