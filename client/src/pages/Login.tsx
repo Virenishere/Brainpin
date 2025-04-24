@@ -19,14 +19,15 @@ const Login = () => {
 
     try {
       console.log("Making API call to /api/users/signin");
-      const response = await instance.post("/api/users/signin", { email, password }); // Remove username
+      const response = await instance.post("/api/users/signin", { email, password });
       console.log("API response:", response.data);
-      const token = response.data.token;
-      if (!token) {
-        throw new Error("No token received from server");
+      const { token, user } = response.data;
+      if (!token || !user?.id) {
+        throw new Error("No token or user ID received from server");
       }
-      console.log("Saving token:", token);
+      console.log("Saving token and userId:", { token, userId: user.id });
       localStorage.setItem("authToken", token);
+      localStorage.setItem("userId", user.id);
       console.log("Navigating to dashboard");
       navigate("/dashboard");
     } catch (err: any) {
