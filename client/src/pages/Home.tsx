@@ -169,7 +169,7 @@ function Home() {
             playsInline
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 h-auto max-w-full max-h-full rounded-xl"
           >
-            <source src="/hero-dark-sm.webm" type="video/webm" />
+            <source src="/brainpindemo.webm" type="video/webm" />
             Your browser does not support the video tag.
           </video>
         </motion.div>
