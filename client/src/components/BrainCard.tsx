@@ -61,30 +61,18 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
       }
 
       try {
-        let response;
-        const types = typeFilter ? typeFilter.split(",") : [];
-        if (types.length > 1) {
-          // Fetch all posts and filter client-side
-          response = await axios.get("https://brainpin.onrender.com/api/posts", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
-          const filteredPosts = response.data.filter((post) =>
-            types.includes(post.type)
-          );
-          setInternalPosts(filteredPosts);
-        } else {
-          // Single type or no filter
-          const url = typeFilter
-            ? `https://brainpin.onrender.com/api/posts?type=${typeFilter}`
-            : "https://brainpin.onrender.com/api/posts";
-          response = await axios.get(url, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
-          setInternalPosts(response.data);
+        const url = typeFilter
+          ? `https://brainpin.onrender.com/api/posts?type=${typeFilter}`
+          : "https://brainpin.onrender.com/api/posts";
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        setInternalPosts(response.data);
+
+        if (response.data.length === 0 && typeFilter) {
+          toast.info(`No posts found for type: ${typeFilter}`);
         }
         setLoading(false);
       } catch (err) {
@@ -196,7 +184,7 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
                   {typeIcons[post.type] || null}
                   {post.title}
                 </CardTitle>
-                <CardDescription className="text-sm text-gray-500">
+                <CardDescription className="text-sm font-medium text-gray-500">
                   {post.type}
                 </CardDescription>
               </div>
@@ -213,7 +201,7 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
                       posts={internalPosts}
                     />
                     <Trash2
-                      className="h-5 w-5 text-gray-600 hover:text-red-500 cursor-pointer"
+                      className="h-5 w-5 text text-gray-600 hover:text-red-500 cursor-pointer"
                       onClick={() => handleDelete(post._id)}
                     />
                   </>
@@ -221,7 +209,7 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="space-y-4">
+              <div className="space-y-4 font-bold">
                 {post.link?.hash && (
                   <div>
                     <strong className="text-sm font-medium text-gray-700">
@@ -314,7 +302,7 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
         <DialogHeader>
           <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleUpdate} className="space-y-4">
+        <form onSubmit={handleUpdate} className="space-y-4 font-medium">
           <div>
             <Label htmlFor="type">Type</Label>
             <Select value={type} onValueChange={setType} required>

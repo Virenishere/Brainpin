@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import BrainCard from "@/components/BrainCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,15 +31,16 @@ const SharedPost = () => {
     const fetchPost = async () => {
       try {
         const response = await axios.get(
-          `https://brainpin.onrender.com/api/posts/${postId}`
+          `https://brainpin.onrender.com/api/posts/shared/${postId}`
         );
         setPost(response.data);
         setLoading(false);
       } catch (err) {
         console.error("Fetch shared post error:", err.response?.data || err.message);
-        setError(
-          "Failed to fetch post: " + (err.response?.data?.message || err.message)
-        );
+        const errorMessage = err.response?.status === 404
+          ? "Post not found. It may have been deleted or the link is invalid."
+          : "Failed to fetch post: " + (err.response?.data?.message || err.message);
+        setError(errorMessage);
         setLoading(false);
       }
     };
@@ -56,6 +57,9 @@ const SharedPost = () => {
       ) : (
         <BrainCard singlePost={post} />
       )}
+      <Link to="/" className="mt-4 text-blue-600 hover:underline">
+        Back to Home
+      </Link>
     </div>
   );
 };

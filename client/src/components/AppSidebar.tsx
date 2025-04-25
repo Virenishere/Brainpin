@@ -14,6 +14,7 @@ import {
   FileText,
   Link2,
   Hash,
+  Library,
 } from "lucide-react";
 import { instance } from "@/lib/axios";
 
@@ -88,7 +89,17 @@ const AppSidebar = () => {
       </SidebarHeader>
 
       <SidebarContent>
+        
         <SidebarGroup>
+        <Link
+            to="/dashboard"
+            className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
+          >
+            <div className="flex items-center gap-2">
+              <Library /> <span>Dashboard</span>
+            </div>
+          </Link>
+
           <Link
             to="/dashboard?type=images,audio"
             className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
