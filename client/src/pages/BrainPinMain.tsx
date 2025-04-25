@@ -18,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { instance } from "@/lib/axios";
 
 const BrainPinMain = () => {
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
@@ -29,10 +29,10 @@ const BrainPinMain = () => {
   const [tags, setTags] = useState("");
   const [postCreated, setPostCreated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formMessage, setFormMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [formMessage, setFormMessage] = useState(null);
   const navigate = useNavigate();
 
-  const handleAddContent = async (e: React.FormEvent) => {
+  const handleAddContent = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setFormMessage(null);
@@ -43,18 +43,11 @@ const BrainPinMain = () => {
         link: link || undefined,
         tags: tags ? tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [],
       };
-      console.log("Creating post with payload:", newPost);
-      console.log("Token:", localStorage.getItem("authToken"));
-      const response = await axios.post(
-        "https://brainpin.onrender.com/api/posts",
-        newPost,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        }
-      );
-      console.log("Create post response:", response.data);
+      const response = await instance.post("api/posts", newPost, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
       setPostCreated(!postCreated);
       setIsAddContentOpen(false);
       setType("");
@@ -62,7 +55,7 @@ const BrainPinMain = () => {
       setLink("");
       setTags("");
       setFormMessage({ type: "success", text: "Post created successfully!" });
-    } catch (err: any) {
+    } catch (err) {
       console.error("Create post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
         localStorage.removeItem("authToken");
@@ -157,7 +150,7 @@ const BrainPinMain = () => {
           </Dialog>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="w-full">
         <BrainCard onPostCreated={postCreated} />
       </div>
     </div>

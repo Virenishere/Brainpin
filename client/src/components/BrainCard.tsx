@@ -53,18 +53,15 @@ const BrainCard = ({ onPostCreated }) => {
         const url = typeFilter
           ? `https://brainpin.onrender.com/api/posts?type=${typeFilter}`
           : "https://brainpin.onrender.com/api/posts";
-        console.log("Fetching posts from:", url); // Debug URL
-        console.log("Token:", localStorage.getItem("authToken")); // Debug token
         const response = await axios.get(url, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        console.log("Fetch posts response:", response.data); // Debug response
         setPosts(response.data);
         setLoading(false);
       } catch (err) {
-        console.error("Fetch posts error:", err.response?.data || err.message); // Debug error
+        console.error("Fetch posts error:", err.response?.data || err.message);
         if (err.response?.status === 401) {
           localStorage.removeItem("authToken");
           localStorage.removeItem("userId");
@@ -86,8 +83,6 @@ const BrainCard = ({ onPostCreated }) => {
   const handleDelete = async (postId) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
-        console.log("Deleting post:", postId); // Debug
-        console.log("Token:", localStorage.getItem("authToken")); // Debug token
         await axios.delete(`https://brainpin.onrender.com/api/posts/${postId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -96,7 +91,7 @@ const BrainCard = ({ onPostCreated }) => {
         setPosts(posts.filter((post) => post._id !== postId));
         alert("Post deleted successfully!");
       } catch (err) {
-        console.error("Delete post error:", err.response?.data || err.message); // Debug error
+        console.error("Delete post error:", err.response?.data || err.message);
         if (err.response?.status === 401) {
           localStorage.removeItem("authToken");
           localStorage.removeItem("userId");
@@ -115,8 +110,6 @@ const BrainCard = ({ onPostCreated }) => {
   // Share post
   const handleShare = async (postId) => {
     try {
-      console.log("Sharing post:", postId); // Debug
-      console.log("Token:", localStorage.getItem("authToken")); // Debug token
       const response = await axios.post(
         `https://brainpin.onrender.com/api/posts/${postId}/share`,
         {},
@@ -126,14 +119,13 @@ const BrainCard = ({ onPostCreated }) => {
           },
         }
       );
-      console.log("Share post response:", response.data); // Debug response
       const shareLink =
         response.data.shareLink ||
         `https://brainpin.onrender.com/api/posts/shared/${postId}`;
       navigator.clipboard.writeText(shareLink);
       alert("Shareable link copied to clipboard!");
     } catch (err) {
-      console.error("Share post error:", err.response?.data || err.message); // Debug error
+      console.error("Share post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userId");
@@ -150,8 +142,9 @@ const BrainCard = ({ onPostCreated }) => {
   // Icon mapping for post types
   const typeIcons = {
     articles: <FileText className="h-5 w-5 text-gray-600 inline-block mr-2" />,
-    videos: <Youtube className="h-5 w-5 text-gray-600 inline-block mr-2" />,
-    tweets: <Twitter className="h-5 w-5 text-gray-600 inline-block mr-2" />,
+    video: <Youtube className="h-5 w-5 text-gray-600 inline-block mr-2" />,
+    images: <Twitter className="h-5 w-5 text-gray-600 inline-block mr-2" />,
+    audio: <Twitter className="h-5 w-5 text-gray-600 inline-block mr-2" />,
   };
 
   if (!userId) {
@@ -161,12 +154,14 @@ const BrainCard = ({ onPostCreated }) => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
       {posts.length === 0 ? (
-        <div>No posts found. Create a new post to get started!</div>
+        <div className="col-span-full text-center">
+          No posts found. Create a new post to get started!
+        </div>
       ) : (
         posts.map((post) => (
-          <Card key={post._id} className="w-[350px] shadow-lg">
+          <Card key={post._id} className="w-full shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-semibold text-gray-800">
@@ -245,11 +240,9 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
       const updatedData = {
         type,
         title,
-        link: link || undefined, // Send undefined if link is empty
+        link: link || undefined,
         tags: tags ? tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [],
       };
-      console.log("Updating post with payload:", updatedData); // Debug payload
-      console.log("Token:", localStorage.getItem("authToken")); // Debug token
       const response = await axios.put(
         `https://brainpin.onrender.com/api/posts/${post._id}`,
         updatedData,
@@ -259,12 +252,11 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
           },
         }
       );
-      console.log("Update post response:", response.data); // Debug response
       setPosts(posts.map((p) => (p._id === post._id ? response.data : p)));
       setIsOpen(false);
       alert("Post updated successfully!");
     } catch (err) {
-      console.error("Update post error:", err.response?.data || err.message); // Debug error
+      console.error("Update post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userId");
@@ -297,8 +289,9 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="articles">Articles</SelectItem>
-                <SelectItem value="videos">Videos</SelectItem>
-                <SelectItem value="tweets">Tweets</SelectItem>
+                <SelectItem value="video">Video</SelectItem>
+                <SelectItem value="images">Images</SelectItem>
+                <SelectItem value="audio">Audio</SelectItem>
               </SelectContent>
             </Select>
           </div>
