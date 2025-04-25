@@ -1,6 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
@@ -19,7 +26,10 @@ const Login = () => {
 
     try {
       console.log("Making API call to /api/users/signin");
-      const response = await instance.post("/api/users/signin", { email, password });
+      const response = await instance.post("/api/users/signin", {
+        email,
+        password,
+      });
       console.log("API response:", response.data);
       const { token, user } = response.data;
       if (!token || !user?.id) {
@@ -32,7 +42,8 @@ const Login = () => {
       navigate("/dashboard");
     } catch (err: any) {
       console.error("API error:", err);
-      const errorMessage = err.response?.data?.message || "Login failed. Please try again.";
+      const errorMessage =
+        err.response?.data?.message || "Login failed. Please try again.";
       setError(errorMessage);
     }
   };
@@ -41,15 +52,19 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold font-medium">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold font-medium">
+            Login
+          </CardTitle>
           <CardDescription className="font-medium">
             Enter your email and password to login
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="email" className="font-medium">Email</Label>
+            <div className="space-y-2 mb-2">
+              <Label htmlFor="email" className="font-medium">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -60,8 +75,10 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="font-medium">Password</Label>
+            <div className="space-y-2 mb-10">
+              <Label htmlFor="password" className="font-medium">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -81,7 +98,10 @@ const Login = () => {
         <CardFooter className="flex flex-col">
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
+            <Link
+              to="/signup"
+              className="text-primary hover:underline font-medium"
+            >
               Sign up
             </Link>
           </p>

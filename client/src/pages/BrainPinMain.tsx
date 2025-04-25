@@ -52,7 +52,12 @@ const BrainPinMain = () => {
         type,
         title,
         link: link || undefined,
-        tags: tags ? tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [],
+        tags: tags
+          ? tags
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+          : [],
       };
       const response = await instance.post("api/posts", newPost, {
         headers: {
@@ -75,7 +80,8 @@ const BrainPinMain = () => {
         toast.error("Session expired. Please log in again.");
       } else {
         toast.error(
-          "Failed to create post: " + (err.response?.data?.message || err.message)
+          "Failed to create post: " +
+            (err.response?.data?.message || err.message)
         );
       }
     } finally {
@@ -90,12 +96,12 @@ const BrainPinMain = () => {
           {isTagSearch ? "Tag Search" : "All Notes"}
         </h1>
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button variant="outline" className="w-full sm:w-auto">
+          <Button variant="outline" className="w-full cursor-pointer sm:w-auto">
             <Share2 className="mr-2 h-4 w-4" /> Share Brain
           </Button>
           <Dialog open={isAddContentOpen} onOpenChange={setIsAddContentOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto cursor-pointer">
                 <Plus className="mr-2 h-4 w-4" /> Add Content
               </Button>
             </DialogTrigger>
@@ -103,18 +109,29 @@ const BrainPinMain = () => {
               <DialogHeader>
                 <DialogTitle>Add New Content</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleAddContent} className="space-y-4">
+              <form
+                onSubmit={handleAddContent}
+                className="space-y-4 font-medium"
+              >
                 <div>
                   <Label htmlFor="type">Type</Label>
                   <Select value={type} onValueChange={setType} required>
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="type" className="cursor-pointer">
                       <SelectValue placeholder="Select a type" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="articles">Articles</SelectItem>
-                      <SelectItem value="video">Video</SelectItem>
-                      <SelectItem value="images">Images</SelectItem>
-                      <SelectItem value="audio">Audio</SelectItem>
+                    <SelectContent className="font-medium">
+                      <SelectItem value="articles" className="cursor-pointer">
+                        Articles
+                      </SelectItem>
+                      <SelectItem value="video" className="cursor-pointer">
+                        Video
+                      </SelectItem>
+                      <SelectItem value="images" className="cursor-pointer">
+                        Images
+                      </SelectItem>
+                      <SelectItem value="audio" className="cursor-pointer">
+                        Audio
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -125,6 +142,7 @@ const BrainPinMain = () => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
+                    className="cursor-pointer"
                   />
                 </div>
                 <div>
@@ -134,6 +152,7 @@ const BrainPinMain = () => {
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
                     placeholder="https://example.com"
+                    className="cursor-pointer"
                   />
                 </div>
                 <div>
@@ -143,9 +162,14 @@ const BrainPinMain = () => {
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
                     placeholder="tag1, tag2"
+                    className="cursor-pointer"
                   />
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full cursor-pointer"
+                >
                   {isLoading ? "Creating..." : "Create Post"}
                 </Button>
               </form>

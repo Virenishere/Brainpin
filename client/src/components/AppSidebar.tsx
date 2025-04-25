@@ -89,9 +89,8 @@ const AppSidebar = () => {
       </SidebarHeader>
 
       <SidebarContent>
-        
         <SidebarGroup>
-        <Link
+          <Link
             to="/dashboard"
             className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
           >
@@ -154,7 +153,7 @@ const AppSidebar = () => {
         )}
         <button
           onClick={handleLogout}
-          className="w-full text-left p-2 text-red-500 hover:bg-red-100 font-medium rounded"
+          className="w-full text-left p-2 text-red-500 hover:bg-red-100 font-medium rounded cursor-pointer"
         >
           Logout
         </button>

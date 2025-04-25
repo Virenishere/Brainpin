@@ -1,68 +1,76 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
-import { useInView } from "react-intersection-observer"
-import { ArrowRight, Brain, Lightbulb, Search, Zap } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { ArrowRight, Brain, Lightbulb, Search, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function Home() {
-  const [showBrainText, setShowBrainText] = useState<boolean>(false)
-  const [brainText, setBrainText] = useState<string>("")
+  const [showBrainText, setShowBrainText] = useState<boolean>(false);
+  const [brainText, setBrainText] = useState<string>("");
 
-  const fullText: string = "Brainpower."
-  const staticText: string = "Boost Your"
-  const chars: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  const fullText: string = "Brainpower.";
+  const staticText: string = "Boost Your";
+  const chars: string =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   // Intersection observers for scroll animations
   const [featuresRef, featuresInView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
-  })
+  });
 
   const [benefitsRef, benefitsInView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
-  })
+  });
 
   const [ctaRef, ctaInView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
-  })
+  });
 
   const [footerRef, footerInView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
-  })
+  });
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>
-    let i = 0
+    let interval: ReturnType<typeof setInterval>;
+    let i = 0;
 
     if (showBrainText) {
       interval = setInterval(() => {
         const currentText = fullText
           .split("")
           .map((_, index) => {
-            if (index < i) return fullText[index]
-            return chars[Math.floor(Math.random() * chars.length)]
+            if (index < i) return fullText[index];
+            return chars[Math.floor(Math.random() * chars.length)];
           })
-          .join("")
+          .join("");
 
-        setBrainText(currentText)
+        setBrainText(currentText);
 
         if (i === fullText.length) {
-          clearInterval(interval)
-          setBrainText(fullText)
+          clearInterval(interval);
+          setBrainText(fullText);
         }
 
-        i++
-      }, 60)
+        i++;
+      }, 60);
     }
 
-    return () => clearInterval(interval)
-  }, [showBrainText])
+    return () => clearInterval(interval);
+  }, [showBrainText]);
 
   // Animation variants for the bento grid items
   const containerVariants = {
@@ -73,7 +81,7 @@ function Home() {
         staggerChildren: 0.2,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, x: -50 },
@@ -85,7 +93,7 @@ function Home() {
         ease: "easeOut",
       },
     },
-  }
+  };
 
   return (
     <div className="px-6 py-8 text-gray-800 dark:text-white m-20">
@@ -114,7 +122,10 @@ function Home() {
             transition={{ duration: 1 }}
             className="mt-4 text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-medium"
           >
-            {staticText} <span className="underline text-gray-400 dark:text-gray-500">{brainText}</span>
+            {staticText}{" "}
+            <span className="underline text-gray-400 dark:text-gray-500">
+              {brainText}
+            </span>
           </motion.h1>
         )}
       </AnimatePresence>
@@ -130,7 +141,8 @@ function Home() {
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
             className="font-medium text-xl sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-gray-800 dark:text-gray-300 mt-40 max-w-5xl"
           >
-            A smart way to organize, capture, and revisit your best ideas — anytime, anywhere.
+            A smart way to organize, capture, and revisit your best ideas —
+            anytime, anywhere.
           </motion.p>
         )}
       </AnimatePresence>
@@ -195,7 +207,8 @@ function Home() {
                 Capture Ideas Instantly
               </h3>
               <p className="text-base md:text-lg font-medium text-gray-600 dark:text-gray-300 mt-2">
-                Never lose a thought again – jot ideas as they come and keep them organized.
+                Never lose a thought again – jot ideas as they come and keep
+                them organized.
               </p>
             </div>
           </motion.div>
@@ -216,9 +229,12 @@ function Home() {
               </div>
             </motion.div>
             <div className="px-2">
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Smart Organization</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                Smart Organization
+              </h3>
               <p className="text-base md:text-lg font-medium text-gray-600 dark:text-gray-300 mt-2">
-                Tags, folders, and smart filters for your notes to find exactly what you need.
+                Tags, folders, and smart filters for your notes to find exactly
+                what you need.
               </p>
             </div>
           </motion.div>
@@ -239,9 +255,12 @@ function Home() {
               </div>
             </motion.div>
             <div className="px-2">
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Revisit Effortlessly</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                Revisit Effortlessly
+              </h3>
               <p className="text-base md:text-lg font-medium text-gray-600 dark:text-gray-300 mt-2">
-                Find your best thoughts when you need them most with powerful search.
+                Find your best thoughts when you need them most with powerful
+                search.
               </p>
             </div>
           </motion.div>
@@ -262,9 +281,12 @@ function Home() {
               </div>
             </motion.div>
             <div className="px-2">
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Unlock Creativity</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                Unlock Creativity
+              </h3>
               <p className="text-base md:text-lg font-medium text-gray-600 dark:text-gray-300 mt-2">
-                Connect dots between ideas to spark innovation and discover new insights.
+                Connect dots between ideas to spark innovation and discover new
+                insights.
               </p>
             </div>
           </motion.div>
@@ -289,12 +311,15 @@ function Home() {
                   <Brain className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <CardTitle>Enhanced Productivity</CardTitle>
-                <CardDescription className="font-medium">Streamline your workflow and boost efficiency</CardDescription>
+                <CardDescription className="font-medium">
+                  Streamline your workflow and boost efficiency
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="font-medium">
-                  Organize your thoughts in a structured way that helps you work smarter, not harder. Our intuitive
-                  system adapts to your thinking style.
+                  Organize your thoughts in a structured way that helps you work
+                  smarter, not harder. Our intuitive system adapts to your
+                  thinking style.
                 </p>
               </CardContent>
               <CardFooter>
@@ -312,12 +337,15 @@ function Home() {
                   <Lightbulb className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <CardTitle>Spark Creativity</CardTitle>
-                <CardDescription className="font-medium">Connect ideas in new and unexpected ways</CardDescription>
+                <CardDescription className="font-medium">
+                  Connect ideas in new and unexpected ways
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="font-medium"> 
-                  Discover connections between your thoughts that spark innovation. Our system helps you see patterns
-                  and relationships you might otherwise miss.
+                <p className="font-medium">
+                  Discover connections between your thoughts that spark
+                  innovation. Our system helps you see patterns and
+                  relationships you might otherwise miss.
                 </p>
               </CardContent>
               <CardFooter>
@@ -335,12 +363,15 @@ function Home() {
                   <Search className="w-6 h-6 text-violet-600 dark:text-violet-400" />
                 </div>
                 <CardTitle>Find Anything Fast</CardTitle>
-                <CardDescription className="font-medium">Powerful search that understands context</CardDescription>
+                <CardDescription className="font-medium">
+                  Powerful search that understands context
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="font-medium">
-                  Never lose an important thought again. Our advanced search understands context and relationships,
-                  helping you find exactly what you need when you need it.
+                  Never lose an important thought again. Our advanced search
+                  understands context and relationships, helping you find
+                  exactly what you need when you need it.
                 </p>
               </CardContent>
               <CardFooter>
@@ -368,10 +399,12 @@ function Home() {
           <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
             <Zap className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Boost Your Brainpower?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Boost Your Brainpower?
+          </h2>
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto font-medium">
-            Join thousands of thinkers, creators, and professionals who have transformed how they capture and develop
-            their best ideas.
+            Join thousands of thinkers, creators, and professionals who have
+            transformed how they capture and develop their best ideas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -381,16 +414,18 @@ function Home() {
             >
               Get Started Now
             </Button>
-            <Button variant="outline" size="lg" onClick={() => (window.location.href = "/login")}>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => (window.location.href = "/login")}
+            >
               Sign In
             </Button>
           </div>
         </motion.div>
       </motion.div>
-
-     
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

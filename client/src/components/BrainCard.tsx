@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +35,8 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
   const [internalPosts, setInternalPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
   const userId = localStorage.getItem("userId");
   const location = useLocation();
   const navigate = useNavigate();
@@ -95,30 +99,36 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
   }, [userId, onPostCreated, typeFilter, navigate, singlePost, posts]);
 
   const handleDelete = async (postId) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      try {
-        await axios.delete(`https://brainpin.onrender.com/api/posts/${postId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        setInternalPosts(internalPosts.filter((post) => post._id !== postId));
-        toast.success("Post deleted successfully!");
-      } catch (err) {
-        console.error("Delete post error:", err.response?.data || err.message);
-        if (err.response?.status === 401) {
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("userId");
-          navigate("/login");
-          toast.error("Session expired. Please log in again.");
-        } else {
-          toast.error(
-            "Failed to delete post: " +
-              (err.response?.data?.message || err.message)
-          );
-        }
+    try {
+      await axios.delete(`https://brainpin.onrender.com/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      setInternalPosts(internalPosts.filter((post) => post._id !== postId));
+      toast.success("Post deleted successfully!");
+    } catch (err) {
+      console.error("Delete post error:", err.response?.data || err.message);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userId");
+        navigate("/login");
+        toast.error("Session expired. Please log in again.");
+      } else {
+        toast.error(
+          "Failed to delete post: " +
+            (err.response?.data?.message || err.message)
+        );
       }
+    } finally {
+      setDeleteDialogOpen(false);
+      setPostToDelete(null);
     }
+  };
+
+  const openDeleteDialog = (postId) => {
+    setPostToDelete(postId);
+    setDeleteDialogOpen(true);
   };
 
   const handleShare = async (postId) => {
@@ -172,7 +182,7 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
       }`}
     >
       {internalPosts.length === 0 ? (
-        <div className="col-span-full text-center">
+        <div className="col-span-full text-center font-medium">
           No posts found. Try a different filter or create a new post!
         </div>
       ) : (
@@ -201,8 +211,8 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
                       posts={internalPosts}
                     />
                     <Trash2
-                      className="h-5 w-5 text text-gray-600 hover:text-red-500 cursor-pointer"
-                      onClick={() => handleDelete(post._id)}
+                      className="h-5 w-5 text-gray-600 hover:text-red-500 cursor-pointer"
+                      onClick={() => openDeleteDialog(post._id)}
                     />
                   </>
                 )}
@@ -245,6 +255,32 @@ const BrainCard = ({ onPostCreated, singlePost, posts }) => {
           </Card>
         ))
       )}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription className="font-medium">
+              Are you sure you want to delete this post? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleDelete(postToDelete)}
+              className="cursor-pointer"
+            >
+              Yes, Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -306,14 +342,14 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
           <div>
             <Label htmlFor="type">Type</Label>
             <Select value={type} onValueChange={setType} required>
-              <SelectTrigger id="type">
+              <SelectTrigger id="type" className="cursor-pointer">
                 <SelectValue placeholder="Select a type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="articles">Articles</SelectItem>
-                <SelectItem value="video">Video</SelectItem>
-                <SelectItem value="images">Images</SelectItem>
-                <SelectItem value="audio">Audio</SelectItem>
+                <SelectItem value="articles" className="cursor-pointer">Articles</SelectItem>
+                <SelectItem value="video" className="cursor-pointer">Video</SelectItem>
+                <SelectItem value="images" className="cursor-pointer">Images</SelectItem>
+                <SelectItem value="audio" className="cursor-pointer">Audio</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -324,6 +360,7 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              className="cursor-pointer"
             />
           </div>
           <div>
@@ -333,6 +370,7 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="https://example.com"
+               className="cursor-pointer"
             />
           </div>
           <div>
@@ -342,9 +380,10 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="tag1, tag2"
+               className="cursor-pointer"
             />
           </div>
-          <Button type="submit">Save Changes</Button>
+          <Button type="submit"  className="cursor-pointer">Save Changes</Button>
         </form>
       </DialogContent>
     </Dialog>

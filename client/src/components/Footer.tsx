@@ -36,7 +36,10 @@ const Footer = () => {
             </div>
             <div className="flex items-center">
               <p className="text-gray-600 dark:text-gray-400 font-medium">
-                Designed by <span className="text-gray-800 dark:text-gray-500 font-bold">Virender</span>
+                Designed by{" "}
+                <span className="text-gray-800 dark:text-gray-500 font-bold">
+                  Virender
+                </span>
               </p>
             </div>
           </div>

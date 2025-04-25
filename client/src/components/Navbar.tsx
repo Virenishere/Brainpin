@@ -17,31 +17,53 @@ const Navbar = () => {
           className="flex items-center space-x-2 hover:scale-105 transition-transform duration-300 cursor-pointer"
         >
           <NotebookPen className="text-purple-500 transition-colors duration-300" />
-          <span className="text-2xl font-bold text-gray-800 dark:text-white">BrainPin</span>
+          <span className="text-2xl font-bold text-gray-800 dark:text-white">
+            BrainPin
+          </span>
         </Link>
 
         <nav className="hidden md:flex items-center space-x-14 text-gray-700 dark:text-gray-200">
-          <Link to="/how-it-works" className="relative group hover:text-gray-500 font-bold">
+          <Link
+            to="/how-it-works"
+            className="relative group hover:text-gray-500 font-bold"
+          >
             How it Works
             <span className="absolute left-0 -bottom-1 h-0.5 w-0 bg-gray-500 transition-all group-hover:w-full"></span>
           </Link>
-          <Link to="/benefits" className="relative group hover:text-gray-500 font-bold">
+          <Link
+            to="/benefits"
+            className="relative group hover:text-gray-500 font-bold"
+          >
             Benefits
             <span className="absolute left-0 -bottom-1 h-0.5 w-0 bg-gray-500 transition-all group-hover:w-full"></span>
           </Link>
-          <Link to="/about" className="relative group hover:text-gray-500 font-bold">
+          <Link
+            to="/about"
+            className="relative group hover:text-gray-500 font-bold"
+          >
             About
             <span className="absolute left-0 -bottom-1 h-0.5 w-0 bg-gray-500 transition-all group-hover:w-full"></span>
           </Link>
         </nav>
 
         <div className="hidden md:flex items-center space-x-3">
-          <Button onClick={toggleDarkMode} variant="ghost" className="transition-colors duration-300">
-            {darkMode ? <Sun className="text-yellow-500" /> : <Moon className="text-gray-700" />}
+          <Button
+            onClick={toggleDarkMode}
+            variant="ghost"
+            className="transition-colors duration-300 cursor-pointer"
+          >
+            {darkMode ? (
+              <Sun className="text-yellow-500" />
+            ) : (
+              <Moon className="text-gray-700" />
+            )}
           </Button>
 
           <Link to="/login">
-            <Button variant="ghost" className="font-bold transition-all duration-300 cursor-pointer">
+            <Button
+              variant="ghost"
+              className="font-bold transition-all duration-300 cursor-pointer"
+            >
               Login
             </Button>
           </Link>
@@ -53,7 +75,9 @@ const Navbar = () => {
         </div>
 
         <div className="md:hidden">
-          <button onClick={() => setIsOpen(!isOpen)}>{isOpen ? <X /> : <Menu />}</button>
+          <button onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X /> : <Menu />}
+          </button>
         </div>
       </div>
 
@@ -68,19 +92,39 @@ const Navbar = () => {
           >
             <div className="flex flex-col items-center text-center font-medium text-gray-700 dark:text-gray-200">
               <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
-              <Link to="/how-it-works" onClick={() => setIsOpen(false)} className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700">
+              <Link
+                to="/how-it-works"
+                onClick={() => setIsOpen(false)}
+                className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700"
+              >
                 How it Works
               </Link>
-              <Link to="/benefits" onClick={() => setIsOpen(false)} className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700">
+              <Link
+                to="/benefits"
+                onClick={() => setIsOpen(false)}
+                className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700"
+              >
                 Benefits
               </Link>
-              <Link to="/about" onClick={() => setIsOpen(false)} className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700">
+              <Link
+                to="/about"
+                onClick={() => setIsOpen(false)}
+                className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700"
+              >
                 About
               </Link>
-              <Link to="/login" onClick={() => setIsOpen(false)} className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700">
+              <Link
+                to="/login"
+                onClick={() => setIsOpen(false)}
+                className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700"
+              >
                 Login
               </Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)} className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700">
+              <Link
+                to="/signup"
+                onClick={() => setIsOpen(false)}
+                className="w-full py-2 hover:text-gray-500 transition-colors duration-300 border-b border-gray-300 dark:border-gray-700"
+              >
                 Signup
               </Link>
 

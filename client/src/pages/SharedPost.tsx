@@ -36,10 +36,15 @@ const SharedPost = () => {
         setPost(response.data);
         setLoading(false);
       } catch (err) {
-        console.error("Fetch shared post error:", err.response?.data || err.message);
-        const errorMessage = err.response?.status === 404
-          ? "Post not found. It may have been deleted or the link is invalid."
-          : "Failed to fetch post: " + (err.response?.data?.message || err.message);
+        console.error(
+          "Fetch shared post error:",
+          err.response?.data || err.message
+        );
+        const errorMessage =
+          err.response?.status === 404
+            ? "Post not found. It may have been deleted or the link is invalid."
+            : "Failed to fetch post: " +
+              (err.response?.data?.message || err.message);
         setError(errorMessage);
         setLoading(false);
       }

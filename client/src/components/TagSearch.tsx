@@ -25,11 +25,14 @@ const TagSearch = ({ postCreated }) => {
       }
 
       try {
-        const response = await axios.get("https://brainpin.onrender.com/api/posts", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
+        const response = await axios.get(
+          "https://brainpin.onrender.com/api/posts",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
 
         const posts = response.data;
         // Extract unique tags
@@ -44,7 +47,8 @@ const TagSearch = ({ postCreated }) => {
       } catch (err) {
         console.error("Fetch posts error:", err.response?.data || err.message);
         setError(
-          "Failed to fetch tags: " + (err.response?.data?.message || err.message)
+          "Failed to fetch tags: " +
+            (err.response?.data?.message || err.message)
         );
         setLoading(false);
       }
@@ -82,9 +86,9 @@ const TagSearch = ({ postCreated }) => {
             value={searchTag}
             onChange={(e) => setSearchTag(e.target.value)}
             placeholder="Enter tag (e.g., react)"
-            className="max-w-md"
+            className="max-w-md font-medium"
           />
-          <Button onClick={handleSearch}>
+          <Button onClick={handleSearch} className="cursor-pointer">
             <Search className="h-4 w-4 mr-2" /> Search
           </Button>
         </div>
@@ -93,7 +97,7 @@ const TagSearch = ({ postCreated }) => {
         <h3 className="text-lg font-semibold mb-2">All Tags</h3>
         <div className="flex flex-wrap gap-2">
           {tags.length === 0 ? (
-            <p>No tags found.</p>
+            <p className="font-medium">No tags found.</p>
           ) : (
             tags.map((tag) => (
               <Button
@@ -104,7 +108,7 @@ const TagSearch = ({ postCreated }) => {
                   setSearchTag(tag);
                   handleSearch();
                 }}
-                className="text-blue-800 border-blue-200 hover:bg-blue-100"
+                className="text-blue-800 border-blue-200 hover:bg-blue-100 cursor-pointer"
               >
                 #{tag}
               </Button>
