@@ -622,14 +622,14 @@ function Home() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 size="lg"
-                className="bg-gray-800 hover:bg-gray-900 text-white"
+                className="bg-gray-800 hover:bg-gray-900 text-white cursor-pointer"
                 onClick={() => (window.location.href = "/signup")}
               >
                 Get Started Now
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="outline" size="lg" onClick={() => (window.location.href = "/login")}>
+              <Button variant="outline" size="lg" className="cursor-pointer" onClick={() => (window.location.href = "/login")}>
                 Sign In
               </Button>
             </motion.div>
