@@ -1,4 +1,5 @@
 import BrainCard from "@/components/BrainCard";
+import TagSearch from "@/components/TagSearch"; // New component
 import { Button } from "@/components/ui/button";
 import { Plus, Share2 } from "lucide-react";
 import React, { useState } from "react";
@@ -18,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { instance } from "@/lib/axios";
+import { toast } from "sonner";
 
 const BrainPinMain = () => {
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
@@ -29,13 +31,22 @@ const BrainPinMain = () => {
   const [tags, setTags] = useState("");
   const [postCreated, setPostCreated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formMessage, setFormMessage] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isTagSearch = location.pathname === "/dashboard/tags";
 
   const handleAddContent = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setFormMessage(null);
+
+    // Validate type and title
+    if (!type || !title) {
+      toast.error("Please provide a type and title");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const newPost = {
         type,
@@ -54,19 +65,18 @@ const BrainPinMain = () => {
       setTitle("");
       setLink("");
       setTags("");
-      setFormMessage({ type: "success", text: "Post created successfully!" });
+      toast.success("Post created successfully!");
     } catch (err) {
       console.error("Create post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userId");
         navigate("/login");
-        setFormMessage({ type: "error", text: "Session expired. Please log in again." });
+        toast.error("Session expired. Please log in again.");
       } else {
-        setFormMessage({
-          type: "error",
-          text: "Failed to create post: " + (err.response?.data?.message || err.message),
-        });
+        toast.error(
+          "Failed to create post: " + (err.response?.data?.message || err.message)
+        );
       }
     } finally {
       setIsLoading(false);
@@ -76,7 +86,9 @@ const BrainPinMain = () => {
   return (
     <div className="min-h-screen p-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
-        <h1 className="font-bold text-xl mb-4 sm:mb-0">All Notes</h1>
+        <h1 className="font-bold text-xl mb-4 sm:mb-0">
+          {isTagSearch ? "Tag Search" : "All Notes"}
+        </h1>
         <div className="flex flex-col sm:flex-row gap-2">
           <Button variant="outline" className="w-full sm:w-auto">
             <Share2 className="mr-2 h-4 w-4" /> Share Brain
@@ -133,15 +145,6 @@ const BrainPinMain = () => {
                     placeholder="tag1, tag2"
                   />
                 </div>
-                {formMessage && (
-                  <div
-                    className={`text-sm ${
-                      formMessage.type === "error" ? "text-red-500" : "text-green-500"
-                    }`}
-                  >
-                    {formMessage.text}
-                  </div>
-                )}
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? "Creating..." : "Create Post"}
                 </Button>
@@ -151,7 +154,11 @@ const BrainPinMain = () => {
         </div>
       </div>
       <div className="w-full">
-        <BrainCard onPostCreated={postCreated} />
+        {isTagSearch ? (
+          <TagSearch postCreated={postCreated} />
+        ) : (
+          <BrainCard onPostCreated={postCreated} />
+        )}
       </div>
     </div>
   );

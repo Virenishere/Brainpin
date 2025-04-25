@@ -14,14 +14,13 @@ const postSchema = z.object({
 
 // Extend Request interface to include user from auth middleware
 interface AuthRequest extends Request {
-    user?: { _id: string }; // Adjust based on your auth middleware
+    user?: { _id: string };
 }
 
 export const createPost = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { type, link, title, tags } = postSchema.parse(req.body);
 
-        // Ensure user is authenticated
         if (!req.user?._id) {
             res.status(401).json({ message: "Unauthorized: User not authenticated" });
             return;
@@ -31,7 +30,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
         if (!linkDoc) {
             linkDoc = await Link.create({
                 hash: link,
-                userId: req.user._id, // Use req.user._id instead of req.body.userId
+                userId: req.user._id,
             });
         }
         const linkId = linkDoc._id as Types.ObjectId;
@@ -54,7 +53,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
             link: linkId,
             title,
             tags: tagIds,
-            userId: req.user._id, // Use req.user._id for post as well
+            userId: req.user._id,
         });
 
         const populatedPost = await Post.findById(post._id)
@@ -67,12 +66,10 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
     }
 };
 
-// Update updatePost similarly
 export const updatePost = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { type, link, title, tags } = postSchema.partial().parse(req.body);
 
-        // Ensure user is authenticated
         if (!req.user?._id) {
             res.status(401).json({ message: "Unauthorized: User not authenticated" });
             return;
@@ -84,7 +81,7 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
             if (!linkDoc) {
                 linkDoc = await Link.create({
                     hash: link,
-                    userId: req.user._id, // Use req.user._id
+                    userId: req.user._id,
                 });
             }
             linkId = linkDoc._id as Types.ObjectId;
@@ -126,27 +123,57 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
     }
 };
 
-// Other functions (getPosts, getPostById, deletePost, sharePost, getSharedPost) remain unchanged
-export const getPosts = async (_req: Request, res: Response): Promise<void> => {
-    const posts = await Post.find()
-        .populate("tags")
-        .populate("link", "hash")
-        .populate("userId", "username email");
-    res.json(posts);
-};
-
-export const getPostById = async (req: Request, res: Response): Promise<void> => {
+export const getPosts = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const post = await Post.findById(req.params.id)
-            .populate("tags")
-            .populate("link", "hash");
-        if (!post) {
-            res.status(404).json({ message: "Post not found" });
+        if (!req.user?._id) {
+            res.status(401).json({ message: "Unauthorized: User not authenticated" });
             return;
         }
-        res.json(post);
-    } catch {
-        res.status(500).json({ message: "Server error" });
+
+        const typeQuery = req.query.type as string;
+        let query: { userId: string; type?: any } = { userId: req.user._id };
+
+        if (typeQuery) {
+            const types = typeQuery.split(",");
+            query.type = { $in: types };
+        }
+
+        const posts = await Post.find(query)
+            .populate("tags")
+            .populate("link", "hash")
+            .populate("userId", "username email");
+
+        res.json(posts);
+    } catch (error: any) {
+        res.status(500).json({ message: "Server error: " + error.message });
+    }
+};
+
+export const getPostsByUserId = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.params.id;
+        const typeQuery = req.query.type as string;
+
+        let query: { userId: string; type?: any } = { userId };
+
+        if (typeQuery) {
+            const types = typeQuery.split(",");
+            query.type = { $in: types };
+        }
+
+        const posts = await Post.find(query)
+            .populate("tags")
+            .populate("link", "hash")
+            .populate("userId", "username email");
+
+        if (posts.length === 0) {
+            res.status(404).json({ message: `No posts found for user ${userId}` });
+            return;
+        }
+
+        res.json(posts);
+    } catch (error: any) {
+        res.status(500).json({ message: "Server error: " + error.message });
     }
 };
 
@@ -158,17 +185,35 @@ export const deletePost = async (req: Request, res: Response): Promise<void> => 
             return;
         }
         res.json({ message: "Post deleted successfully" });
-    } catch {
-        res.status(500).json({ message: "Server error" });
+    } catch (error: any) {
+        res.status(500).json({ message: "Server error: " + error.message });
     }
 };
 
 export const sharePost = async (req: Request, res: Response): Promise<void> => {
-    const postId = req.params.id;
-    res.json({ message: `Post with ID ${postId} shared successfully.` });
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            res.status(404).json({ message: "Post not found" });
+            return;
+        }
+        res.json({ message: `Post with ID ${req.params.id} shared successfully.` });
+    } catch (error: any) {
+        res.status(500).json({ message: "Server error: " + error.message });
+    }
 };
 
 export const getSharedPost = async (req: Request, res: Response): Promise<void> => {
-    const postId = req.params.id;
-    res.json({ message: `Shared post with ID ${postId}` });
+    try {
+        const post = await Post.findById(req.params.id)
+            .populate("tags")
+            .populate("link", "hash");
+        if (!post) {
+            res.status(404).json({ message: "Post not found" });
+            return;
+        }
+        res.json(post);
+    } catch (error: any) {
+        res.status(500).json({ message: "Server error: " + error.message });
+    }
 };

@@ -27,21 +27,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import axios from "axios";
+import { toast } from "sonner";
 
-const BrainCard = ({ onPostCreated }) => {
-  const [posts, setPosts] = useState([]);
+const BrainCard = ({ onPostCreated, singlePost, posts }) => {
+  const [internalPosts, setInternalPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userId = localStorage.getItem("userId");
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Extract type from query parameters
   const queryParams = new URLSearchParams(location.search);
-  const typeFilter = queryParams.get("type");
+  const typeFilter = singlePost || posts ? null : queryParams.get("type");
 
-  // Fetch posts for the logged-in user, optionally filtered by type
   useEffect(() => {
+    if (singlePost) {
+      setInternalPosts([singlePost]);
+      setLoading(false);
+      return;
+    }
+
+    if (posts) {
+      setInternalPosts(posts);
+      setLoading(false);
+      return;
+    }
+
     const fetchPosts = async () => {
       if (!userId) {
         setError("Please log in to view your posts");
@@ -50,15 +61,31 @@ const BrainCard = ({ onPostCreated }) => {
       }
 
       try {
-        const url = typeFilter
-          ? `https://brainpin.onrender.com/api/posts?type=${typeFilter}`
-          : "https://brainpin.onrender.com/api/posts";
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        setPosts(response.data);
+        let response;
+        const types = typeFilter ? typeFilter.split(",") : [];
+        if (types.length > 1) {
+          // Fetch all posts and filter client-side
+          response = await axios.get("https://brainpin.onrender.com/api/posts", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
+          const filteredPosts = response.data.filter((post) =>
+            types.includes(post.type)
+          );
+          setInternalPosts(filteredPosts);
+        } else {
+          // Single type or no filter
+          const url = typeFilter
+            ? `https://brainpin.onrender.com/api/posts?type=${typeFilter}`
+            : "https://brainpin.onrender.com/api/posts";
+          response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
+          setInternalPosts(response.data);
+        }
         setLoading(false);
       } catch (err) {
         console.error("Fetch posts error:", err.response?.data || err.message);
@@ -77,9 +104,8 @@ const BrainCard = ({ onPostCreated }) => {
       }
     };
     fetchPosts();
-  }, [userId, onPostCreated, typeFilter, navigate]);
+  }, [userId, onPostCreated, typeFilter, navigate, singlePost, posts]);
 
-  // Delete post
   const handleDelete = async (postId) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
@@ -88,17 +114,17 @@ const BrainCard = ({ onPostCreated }) => {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        setPosts(posts.filter((post) => post._id !== postId));
-        alert("Post deleted successfully!");
+        setInternalPosts(internalPosts.filter((post) => post._id !== postId));
+        toast.success("Post deleted successfully!");
       } catch (err) {
         console.error("Delete post error:", err.response?.data || err.message);
         if (err.response?.status === 401) {
           localStorage.removeItem("authToken");
           localStorage.removeItem("userId");
           navigate("/login");
-          alert("Session expired. Please log in again.");
+          toast.error("Session expired. Please log in again.");
         } else {
-          alert(
+          toast.error(
             "Failed to delete post: " +
               (err.response?.data?.message || err.message)
           );
@@ -107,10 +133,9 @@ const BrainCard = ({ onPostCreated }) => {
     }
   };
 
-  // Share post
   const handleShare = async (postId) => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `https://brainpin.onrender.com/api/posts/${postId}/share`,
         {},
         {
@@ -119,27 +144,24 @@ const BrainCard = ({ onPostCreated }) => {
           },
         }
       );
-      const shareLink =
-        response.data.shareLink ||
-        `https://brainpin.onrender.com/api/posts/shared/${postId}`;
+      const shareLink = `${window.location.origin}/shared/${postId}`;
       navigator.clipboard.writeText(shareLink);
-      alert("Shareable link copied to clipboard!");
+      toast.success("Shareable link copied to clipboard!");
     } catch (err) {
       console.error("Share post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userId");
         navigate("/login");
-        alert("Session expired. Please log in again.");
+        toast.error("Session expired. Please log in again.");
       } else {
-        alert(
+        toast.error(
           "Failed to share post: " + (err.response?.data?.message || err.message)
         );
       }
     }
   };
 
-  // Icon mapping for post types
   const typeIcons = {
     articles: <FileText className="h-5 w-5 text-gray-600 inline-block mr-2" />,
     video: <Youtube className="h-5 w-5 text-gray-600 inline-block mr-2" />,
@@ -147,21 +169,27 @@ const BrainCard = ({ onPostCreated }) => {
     audio: <Twitter className="h-5 w-5 text-gray-600 inline-block mr-2" />,
   };
 
-  if (!userId) {
+  if (!userId && !singlePost && !posts) {
     return <div>Please log in to view your posts.</div>;
   }
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-      {posts.length === 0 ? (
+    <div
+      className={`${
+        singlePost
+          ? "flex justify-center"
+          : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full"
+      }`}
+    >
+      {internalPosts.length === 0 ? (
         <div className="col-span-full text-center">
-          No posts found. Create a new post to get started!
+          No posts found. Try a different filter or create a new post!
         </div>
       ) : (
-        posts.map((post) => (
-          <Card key={post._id} className="w-full shadow-lg">
+        internalPosts.map((post) => (
+          <Card key={post._id} className="w-full max-w-md shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-semibold text-gray-800">
@@ -177,11 +205,19 @@ const BrainCard = ({ onPostCreated }) => {
                   className="h-5 w-5 text-gray-600 hover:text-blue-500 cursor-pointer"
                   onClick={() => handleShare(post._id)}
                 />
-                <UpdatePostModal post={post} setPosts={setPosts} posts={posts} />
-                <Trash2
-                  className="h-5 w-5 text-gray-600 hover:text-red-500 cursor-pointer"
-                  onClick={() => handleDelete(post._id)}
-                />
+                {!singlePost && (
+                  <>
+                    <UpdatePostModal
+                      post={post}
+                      setPosts={setInternalPosts}
+                      posts={internalPosts}
+                    />
+                    <Trash2
+                      className="h-5 w-5 text-gray-600 hover:text-red-500 cursor-pointer"
+                      onClick={() => handleDelete(post._id)}
+                    />
+                  </>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pt-4">
@@ -225,7 +261,6 @@ const BrainCard = ({ onPostCreated }) => {
   );
 };
 
-// Update Post Modal Component
 const UpdatePostModal = ({ post, setPosts, posts }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState(post.type);
@@ -254,18 +289,17 @@ const UpdatePostModal = ({ post, setPosts, posts }) => {
       );
       setPosts(posts.map((p) => (p._id === post._id ? response.data : p)));
       setIsOpen(false);
-      alert("Post updated successfully!");
+      toast.success("Post updated successfully!");
     } catch (err) {
       console.error("Update post error:", err.response?.data || err.message);
       if (err.response?.status === 401) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userId");
         navigate("/login");
-        alert("Session expired. Please log in again.");
+        toast.error("Session expired. Please log in again.");
       } else {
-        alert(
-          "Failed to update post: " +
-            (err.response?.data?.message || err.message)
+        toast.error(
+          "Failed to update post: " + (err.response?.data?.message || err.message)
         );
       }
     }

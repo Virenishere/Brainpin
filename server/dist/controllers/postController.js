@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSharedPost = exports.sharePost = exports.deletePost = exports.updatePost = exports.getPostById = exports.getPosts = exports.createPost = void 0;
+exports.getSharedPost = exports.sharePost = exports.deletePost = exports.getPostsByUserId = exports.getPosts = exports.updatePost = exports.createPost = void 0;
 const zod_1 = require("zod");
 const postModel_1 = __importDefault(require("../models/postModel"));
 const tagsModel_1 = __importDefault(require("../models/tagsModel"));
@@ -24,13 +24,18 @@ const postSchema = zod_1.z.object({
     tags: zod_1.z.array(zod_1.z.string()).optional(),
 });
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { type, link, title, tags } = postSchema.parse(req.body);
+        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a._id)) {
+            res.status(401).json({ message: "Unauthorized: User not authenticated" });
+            return;
+        }
         let linkDoc = yield linkModel_1.default.findOne({ hash: link });
         if (!linkDoc) {
             linkDoc = yield linkModel_1.default.create({
                 hash: link,
-                userId: req.body.userId,
+                userId: req.user._id,
             });
         }
         const linkId = linkDoc._id;
@@ -49,7 +54,7 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             link: linkId,
             title,
             tags: tagIds,
-            userId: req.body.userId,
+            userId: req.user._id,
         });
         const populatedPost = yield postModel_1.default.findById(post._id)
             .populate("link", "hash")
@@ -61,40 +66,21 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.createPost = createPost;
-const getPosts = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const posts = yield postModel_1.default.find()
-        .populate("tags")
-        .populate("link", "hash")
-        .populate("userId", "username email");
-    res.json(posts);
-});
-exports.getPosts = getPosts;
-const getPostById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const post = yield postModel_1.default.findById(req.params.id)
-            .populate("tags")
-            .populate("link", "hash");
-        if (!post) {
-            res.status(404).json({ message: "Post not found" });
-            return;
-        }
-        res.json(post);
-    }
-    catch (_a) {
-        res.status(500).json({ message: "Server error" });
-    }
-});
-exports.getPostById = getPostById;
 const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { type, link, title, tags } = postSchema.partial().parse(req.body);
+        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a._id)) {
+            res.status(401).json({ message: "Unauthorized: User not authenticated" });
+            return;
+        }
         let linkId;
         if (link) {
             let linkDoc = yield linkModel_1.default.findOne({ hash: link });
             if (!linkDoc) {
                 linkDoc = yield linkModel_1.default.create({
                     hash: link,
-                    userId: req.body.userId,
+                    userId: req.user._id,
                 });
             }
             linkId = linkDoc._id;
@@ -134,6 +120,54 @@ const updatePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.updatePost = updatePost;
+const getPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a._id)) {
+            res.status(401).json({ message: "Unauthorized: User not authenticated" });
+            return;
+        }
+        const typeQuery = req.query.type;
+        let query = { userId: req.user._id };
+        if (typeQuery) {
+            const types = typeQuery.split(",");
+            query.type = { $in: types };
+        }
+        const posts = yield postModel_1.default.find(query)
+            .populate("tags")
+            .populate("link", "hash")
+            .populate("userId", "username email");
+        res.json(posts);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Server error: " + error.message });
+    }
+});
+exports.getPosts = getPosts;
+const getPostsByUserId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.params.id;
+        const typeQuery = req.query.type;
+        let query = { userId };
+        if (typeQuery) {
+            const types = typeQuery.split(",");
+            query.type = { $in: types };
+        }
+        const posts = yield postModel_1.default.find(query)
+            .populate("tags")
+            .populate("link", "hash")
+            .populate("userId", "username email");
+        if (posts.length === 0) {
+            res.status(404).json({ message: `No posts found for user ${userId}` });
+            return;
+        }
+        res.json(posts);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Server error: " + error.message });
+    }
+});
+exports.getPostsByUserId = getPostsByUserId;
 const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const post = yield postModel_1.default.findByIdAndDelete(req.params.id);
@@ -143,18 +177,38 @@ const deletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         res.json({ message: "Post deleted successfully" });
     }
-    catch (_a) {
-        res.status(500).json({ message: "Server error" });
+    catch (error) {
+        res.status(500).json({ message: "Server error: " + error.message });
     }
 });
 exports.deletePost = deletePost;
 const sharePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const postId = req.params.id;
-    res.json({ message: `Post with ID ${postId} shared successfully.` });
+    try {
+        const post = yield postModel_1.default.findById(req.params.id);
+        if (!post) {
+            res.status(404).json({ message: "Post not found" });
+            return;
+        }
+        res.json({ message: `Post with ID ${req.params.id} shared successfully.` });
+    }
+    catch (error) {
+        res.status(500).json({ message: "Server error: " + error.message });
+    }
 });
 exports.sharePost = sharePost;
 const getSharedPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const postId = req.params.id;
-    res.json({ message: `Shared post with ID ${postId}` });
+    try {
+        const post = yield postModel_1.default.findById(req.params.id)
+            .populate("tags")
+            .populate("link", "hash");
+        if (!post) {
+            res.status(404).json({ message: "Post not found" });
+            return;
+        }
+        res.json(post);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Server error: " + error.message });
+    }
 });
 exports.getSharedPost = getSharedPost;

@@ -8,11 +8,11 @@ const postController_1 = require("../controllers/postController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = express_1.default.Router();
 router.post("/", authMiddleware_1.protect, postController_1.createPost);
-router.get("/", postController_1.getPosts);
-router.get("/:id", postController_1.getPostById);
+router.get("/", authMiddleware_1.protect, postController_1.getPosts);
+router.get("/:id", postController_1.getPostsByUserId); // Updated to getPostsByUserId
 router.put("/:id", authMiddleware_1.protect, postController_1.updatePost);
 router.delete("/:id", authMiddleware_1.protect, postController_1.deletePost);
-// share functionalities
+// Share functionalities
 router.post("/:id/share", authMiddleware_1.protect, postController_1.sharePost);
 router.get("/shared/:id", postController_1.getSharedPost);
 exports.default = router;

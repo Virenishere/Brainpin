@@ -2,7 +2,7 @@ import express from "express";
 import {
     createPost,
     getPosts,
-    getPostById,
+    getPostsByUserId, // Changed from getPostById
     updatePost,
     deletePost,
     sharePost,
@@ -13,12 +13,12 @@ import { protect } from "../middlewares/authMiddleware";
 const router = express.Router();
 
 router.post("/", protect, createPost);
-router.get("/", getPosts);
-router.get("/:id", getPostById);
+router.get("/", protect, getPosts);
+router.get("/:id", getPostsByUserId); // Updated to getPostsByUserId
 router.put("/:id", protect, updatePost);
 router.delete("/:id", protect, deletePost);
 
-// share functionalities
+// Share functionalities
 router.post("/:id/share", protect, sharePost);
 router.get("/shared/:id", getSharedPost);
 

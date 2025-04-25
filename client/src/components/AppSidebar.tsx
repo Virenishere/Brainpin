@@ -89,27 +89,42 @@ const AppSidebar = () => {
 
       <SidebarContent>
         <SidebarGroup>
-          <Link to="#" className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium">
+          <Link
+            to="/dashboard?type=images,audio"
+            className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
+          >
             <div className="flex items-center gap-2">
               <Twitter /> <span>Tweets</span>
             </div>
           </Link>
-          <Link to="#" className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium">
+          <Link
+            to="/dashboard?type=video"
+            className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
+          >
             <div className="flex items-center gap-2">
               <Youtube /> <span>Videos</span>
             </div>
           </Link>
-          <Link to="#" className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium">
+          <Link
+            to="/dashboard?type=articles"
+            className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
+          >
             <div className="flex items-center gap-2">
               <FileText /> <span>Documents</span>
             </div>
           </Link>
-          <Link to="#" className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium">
+          <Link
+            to="/dashboard"
+            className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
+          >
             <div className="flex items-center gap-2">
               <Link2 /> <span>Links</span>
             </div>
           </Link>
-          <Link to="#" className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium">
+          <Link
+            to="/dashboard/tags"
+            className="block p-2 hover:bg-purple-100 rounded hover:text-black font-medium"
+          >
             <div className="flex items-center gap-2">
               <Hash /> <span>Tags</span>
             </div>
@@ -120,8 +135,10 @@ const AppSidebar = () => {
       <SidebarFooter>
         {!loading && user && (
           <div className="p-2 text-gray-800 dark:text-gray-200 font-medium">
-            <p><strong>Welcome!👋</strong> {user.username}</p>
-            <p> {user.email}</p>
+            <p>
+              <strong>Welcome!👋</strong> {user.username}
+            </p>
+            <p>{user.email}</p>
           </div>
         )}
         <button
