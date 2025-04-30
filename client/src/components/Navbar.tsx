@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { NotebookPen, Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { Button } from "./ui/button";
 import useThemeStore from "@/store/useThemeStore";
 
@@ -16,7 +16,7 @@ const Navbar = () => {
           to="/"
           className="flex items-center space-x-2 hover:scale-105 transition-transform duration-300 cursor-pointer"
         >
-          <NotebookPen className="text-purple-500 transition-colors duration-300" />
+          <img src="/logowhite.png" alt="logo" className="h-10"/>
           <span className="text-2xl font-bold text-gray-800 dark:text-white">
             BrainPin
           </span>
